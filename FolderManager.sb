@@ -1,15 +1,17 @@
-' Program Folder Manager 0.2
+' Program Folder Manager 0.3
 ' Copyright (c) 2014 Nonki Takahashi.
 ' 
 ' History:
+'  0.3 2014-06-13 Supported sub folders. (CRK000-1)
 '  0.2 2014-06-06 Added other folders. (CRK000-0)
 '  0.1 2014-06-04 Created. (CRK000)
 '
 Settings_GetName()
 Settings_GetFolder()
-settings[1] = path
-settings[2] = "C:\Users\Nonki\SkyDrive\Documents\MySmallBasic\"
-settings[3] = "C:\Users\Nonki\SkyDrive\Documents\MySmallBasic\Challenge of the Month\"
+roots[1] = "C:\Users\Nonki\SkyDrive\Documents\MySmallBasic\"
+roots[2] = "C:\Users\Nonki\SkyDrive\Documents\SmallBasic\"
+roots[3] = "C:\Users\Nonki\SkyDrive\Documents\SmallBasic\Shapes\Art\"
+Settings_GetSubFolders()
 filename = path + "ProgramScanner.settings"
 Settings_Write()
 TextWindow.WriteLine(filename)
@@ -24,6 +26,22 @@ Sub Settings_GetFolder
     bs = Text.GetIndexOf(Text.GetSubTextToEnd(filename, p), "\")
   EndWhile 
   path = Text.GetSubText(filename, 1, p - 1)
+EndSub
+Sub Settings_GetSubFolders
+  ' param roots - array of root folder names
+  ' return settings - array of root and sub folder names
+  nRoot = Array.GetItemCount(roots)
+  nSub = 0
+  For i = 1 To nRoot
+    nSub = nSub + 1
+    settings[nSub] = roots[i]
+    dir = File.GetDirectories(roots[i])
+    nDir = Array.GetItemCount(dir)
+    For j = 1 To nDir
+      nSub = nSub + 1
+      settings[nSub] = dir[j]
+    EndFor
+  EndFor
 EndSub
 Sub Settings_GetName
   ' return filename

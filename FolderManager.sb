@@ -1,16 +1,18 @@
-' Program Folder Manager 0.3
-' Copyright (c) 2014 Nonki Takahashi.
+' Program Folder Manager 0.4
+' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
+' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
+'  0.4 2015-12-07 #2 Changed for Windows 10.
 '  0.3 2014-06-13 Supported sub folders. (CRK000-1)
 '  0.2 2014-06-06 Added other folders. (CRK000-0)
 '  0.1 2014-06-04 Created. (CRK000)
 '
 Settings_GetName()
 Settings_GetFolder()
-roots[1] = "C:\Users\Nonki\SkyDrive\Documents\MySmallBasic\"
-roots[2] = "C:\Users\Nonki\SkyDrive\Documents\SmallBasic\"
-roots[3] = "C:\Users\Nonki\SkyDrive\Documents\SmallBasic\Shapes\Art\"
+roots[1] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\"
+roots[2] = "C:\Users\Nonki\OneDrive\Documents\SmallBasic\"
+roots[3] = "C:\Users\Nonki\OneDrive\Documents\SmallBasic\Shapes\Art\"
 Settings_GetSubFolders()
 filename = path + "ProgramScanner.settings"
 Settings_Write()
@@ -58,3 +60,4 @@ Sub Settings_Write
   ' return result
   result = File.WriteContents(filename, settings)
 EndSub
+  

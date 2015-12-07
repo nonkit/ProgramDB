@@ -1,11 +1,13 @@
-' Program Database 0.2a
-' Copyright (c) 2014 Nonki Takahashi.  MIT License.
+' Program Database 0.3a
+' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
+' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
+'  0.3a 2015-12-07 #1 Supported Combo Box.
 '  0.2a 2014-06-24 Design changed. (HMK932-0)
 '  0.1a 2014-06-09 Created. (HMK932)
 '
-GraphicsWindow.Title = "Program Database 0.2a"
+GraphicsWindow.Title = "Program Database 0.3a"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 gw = 598
 gh = 428
@@ -117,11 +119,11 @@ Sub Controls_AddComboBox
   ' param left - the x co-ordinate of the combo box
   ' param top - the y co-ordinate of the combo box
   ' return cbox - the combo box
-  ' version 0.11a
+  ' version 0.2b
   Stack.PushValue("local", i)
   nCBox = nCBox + 1
   fs = GraphicsWindow.FontSize
-  cbProp[nCBox]["is"] = fs * 1.4 
+  cbProp[nCBox]["height"] = fs * 1.8
   nItem = Array.GetItemCount(item)
   cbProp[nCBox]["nItem"] = nItem
   cbProp[nCBox]["item"] = item
@@ -137,15 +139,17 @@ Sub Controls_AddComboBox
     EndIf
   EndFor
   tboxWidth = widthMax + fs
-  cbProp[nCBox]["menuWidth"] = tboxWidth
-  cbProp[nCBox]["menuX"] = left
-  cbProp[nCBox]["menuY"] = top
+  cbProp[nCBox]["width"] = tboxWidth
+  cbProp[nCBox]["x"] = left
+  cbProp[nCBox]["y"] = top
   cbProp[nCBox]["tbox"] = Controls.AddTextBox(left, top)
-  Controls.SetSize(cbProp[nCBox]["tbox"], tboxWidth, fs * 1.8)
-  cbProp[nCBox]["btn"] = Controls.AddButton("▾", left + tboxWidth, top)
-  Controls.SetSize(cbProp[nCBox]["btn"], fs * 2, fs * 1.8)
+  Controls.SetSize(cbProp[nCBox]["tbox"], tboxWidth, cbProp[nCBox]["height"])
+  cbProp[nCBox]["btn"] = Controls.AddButton("▾", left + tboxWidth - 1, top)
+  Controls.SetSize(cbProp[nCBox]["btn"], fs * 1.8, cbProp[nCBox]["height"])
   cbox = "ComboBox" + nCBox
   Controls.ButtonClicked = Controls_OnButtonClicked
+  GraphicsWindow.MouseMove = Controls_OnMouseMove
+  GraphicsWindow.MouseDown = Controls_OnMouseDown
   i = Stack.PopValue("local")
 EndSub
 Sub Controls_Proc
@@ -155,25 +159,39 @@ Sub Controls_Proc
       GraphicsWindow.PenColor = "LightGray"
       GraphicsWindow.PenWidth = 1
       GraphicsWindow.BrushColor = "White"
-      rect = Shapes.AddRectangle(cbProp[i]["menuWidth"], cbProp[i]["is"] * cbProp[i]["nItem"])
-      Shapes.Move(rect, cbProp[i]["menuX"], cbProp[i]["menuY"])
+      rect = Shapes.AddRectangle(cbProp[i]["width"], cbProp[i]["height"] * cbProp[i]["nItem"])
+      Shapes.Move(rect, cbProp[i]["x"], cbProp[i]["y"] + cbProp[i]["height"] - 1)
       GraphicsWindow.BrushColor = "Black"
       For j = 1 To cbProp[i]["nItem"]
         it[j] = Shapes.AddText(cbProp[i]["item"][j])
-        Shapes.Move(it[j], cbProp[i]["menuX"] + cbProp[i]["is"] / 2, cbProp[i]["menuY"] + (j - 1) * cbProp[i]["is"])
+        Shapes.Move(it[j], cbProp[i]["x"] + cbProp[i]["height"] * 0.3, cbProp[i]["y"] + (j + 0.2) * cbProp[i]["height"])
       EndFor
-      Program.Delay(1000)
+      Controls_mouseDown = "False"
+      While Not[Controls_mouseDown]
+        If Controls_mouseMove Then
+          Controls_Select()
+          Controls_mouseMove = "False"
+        Else
+          Program.Delay(200)
+        EndIf
+      EndWhile
+      Controls_Select()
+      Shapes.Remove(cbSelect)
+      cbSelect = ""
       For j = 1 To cbProp[i]["nItem"]
         Shapes.Remove(it[j])
       EndFor
       Shapes.Remove(rect)
-      Controls.SetTextBoxText(cbProp[i]["tbox"],cbProp[i]["item"][Math.GetRandomNumber(cbProp[i]["nItem"])])
+      If selected <> 0 Then
+        Controls.SetTextBoxText(cbProp[i]["tbox"],cbProp[i]["item"][selected])
+      EndIf
     EndIf
   EndFor
   Controls_triggered = "False"
 EndSub
 Sub Controls_Init
   ' version 0.1a
+  Not = "False=True;True=False;"
   GraphicsWindow.FontName = "Lucida UI"
   GraphicsWindow.BrushColor = "Black"
   WQ = Text.GetCharacter(34)
@@ -196,4 +214,35 @@ EndSub
 Sub Controls_OnButtonClicked
   ' version 0.1a
   Controls_triggered = "True"
+EndSub
+Sub Controls_OnMouseMove
+  ' version 0.1a
+  Controls_mx = GraphicsWindow.MouseX
+  Controls_my = GraphicsWindow.MouseY
+  Controls_mouseMove = "True"
+EndSub
+Sub Controls_OnMouseDown
+  ' version 0.1a
+  Controls_mx = GraphicsWindow.MouseX
+  Controls_my = GraphicsWindow.MouseY
+  Controls_mouseDown = "True"
+EndSub
+Sub Controls_Select
+  ' version 0.1a
+  selected = 0
+  If cbProp[i]["x"] <= Controls_mx And Controls_mx <= cbProp[i]["x"] + cbProp[i]["width"] Then
+    For j = 1 To cbProp[i]["nItem"]
+      y1 = cbProp[i]["y"] + j * cbProp[i]["height"]
+      y2 = y1 + cbProp[i]["height"]
+      If y1 <= Controls_my And Controls_my <= y2 Then
+        GraphicsWindow.BrushColor = "#663399FF"
+        GraphicsWindow.PenWidth = 0
+        If cbSelect = "" Then
+          cbSelect = Shapes.AddRectangle(cbProp[i]["width"], cbProp[i]["height"])
+        EndIf
+        Shapes.Move(cbSelect, cbProp[i]["x"], y1 - 1)
+        selected = j
+      EndIf
+    EndFor
+  EndIf
 EndSub

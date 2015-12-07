@@ -1,0 +1,42 @@
+' Program Folder Manager 0.2
+' Copyright (c) 2014 Nonki Takahashi.
+' 
+' History:
+'  0.2 2014-06-06 Added other folders. (CRK000-0)
+'  0.1 2014-06-04 Created. (CRK000)
+'
+Settings_GetName()
+Settings_GetFolder()
+settings[1] = path
+settings[2] = "C:\Users\Nonki\SkyDrive\Documents\MySmallBasic\"
+settings[3] = "C:\Users\Nonki\SkyDrive\Documents\MySmallBasic\Challenge of the Month\"
+filename = path + "ProgramScanner.settings"
+Settings_Write()
+TextWindow.WriteLine(filename)
+TextWindow.WriteLine(settings)
+Sub Settings_GetFolder
+  ' param filename
+  ' return path
+  p = 1
+  bs = Text.GetIndexOf(Text.GetSubTextToEnd(filename, p), "\")
+  While 0 < bs
+    p = p + bs
+    bs = Text.GetIndexOf(Text.GetSubTextToEnd(filename, p), "\")
+  EndWhile 
+  path = Text.GetSubText(filename, 1, p - 1)
+EndSub
+Sub Settings_GetName
+  ' return filename
+  filename = File.GetSettingsFilePath()
+EndSub
+Sub Settings_Read
+  ' param filename
+  ' return settings
+  settings = File.ReadContents(filename)
+EndSub
+Sub Settings_Write
+  ' param filename
+  ' param settings
+  ' return result
+  result = File.WriteContents(filename, settings)
+EndSub

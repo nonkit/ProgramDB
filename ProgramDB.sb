@@ -1,77 +1,168 @@
-' Program Database 0.3a
+' Program Database 0.4a
 ' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
 ' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
-'  0.3a 2015-12-07 #1 Supported Combo Box.
+'  0.4a 2015-12-12 Supported Search button.
+'  0.3a 2015-12-07 #1 Supported combo box.
 '  0.2a 2014-06-24 Design changed. (HMK932-0)
 '  0.1a 2014-06-09 Created. (HMK932)
 '
-GraphicsWindow.Title = "Program Database 0.3a"
+GraphicsWindow.Title = "Program Database 0.4a"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
-gw = 598
-gh = 428
-GraphicsWindow.Width = gw
-GraphicsWindow.Height = gh
-CRLF = Text.GetCharacter(13) + text.GetCharacter(10)
-GraphicsWindow.BackgroundColor = "LightGray"
-GraphicsWindow.BrushColor = "Black"
-hd = "1=Program ID;2=Source Filename;3=Screen Shot;4=Description;5=Last Update;6=Version;7=Author;8=Lines;9=Subroutines;10=Challenge;"
-filename = Program.Directory + "\ProgramDB.csv"
-ReadCSV()
-y = 10
-Controls_Init()
-For i = 1 To 3
-  x = 10
-  If 1 < i Then
-    item = "1=AND;2=OR;"
-    left = x
-    top = y
-    Controls_AddComboBox()
-    cbLOp[i] = cbox
-  EndIf
-  x = x + 80
-  item = hd
-  left = x
-  top = y
-  Controls_AddComboBox()
-  cbItem[i] = cbox
-  x = x + 190
-  item = "1=\=;2=>;3=<;4=>\=;5=<\=;6=<>;7=LIKE;"
-  left = x
-  top = y
-  Controls_AddComboBox()
-  x = x + 80
-  cbOp[i] = cbox
-  tb[i] = Controls.AddTextBox(x, y)
-  Controls.SetSize(tb[i], gw - 10 - x, 22)
-  y = y + 30
-EndFor
-x = 10
-bt = Controls.AddButton("Search", x, y)
-tx = Shapes.AddText("Records: " + num + " / " + num)
-Shapes.Move(tx, gw / 2, y + 4)
-y = y + 40
-mtb = Controls.AddMultiLineTextBox(x, y)
-Controls.SetSize(mtb, gw - 20, gh - y - 10)
-buf = ""
-For i = 1 To num
-  For j = 1 To 10
-    buf = buf + pgm[i][j]
-    If j < 10 Then
-      buf = Text.Append(buf, ",")
-    EndIf
-  EndFor
-  buf = buf + CRLF
-EndFor
-Controls.SetTextBoxText(mtb, buf)
+Form()
 While "True"
   If Controls_triggered Then
-    Controls_Proc()
+    If Controls.LastClickedButton = bt Then
+      Search()
+      Controls_triggered = "False"
+    Else
+      Controls_Proc()
+    EndIf
   Else
     Program.Delay(200)
   EndIf
 EndWhile
+Sub Form
+  gw = 598
+  gh = 428
+  GraphicsWindow.Width = gw
+  GraphicsWindow.Height = gh
+  CRLF = Text.GetCharacter(13) + text.GetCharacter(10)
+  GraphicsWindow.BackgroundColor = "LightGray"
+  GraphicsWindow.BrushColor = "Black"
+  hd = "1=Program ID;2=Source Filename;3=Screen Shot;4=Description;5=Last Update;"
+  hd = hd + "6=Version;7=Author;8=Lines;9=Subroutines;10=Challenge;"
+  filename = Program.Directory + "\ProgramDB.csv"
+  y = 10
+  Controls_Init()
+  For i = 1 To 3
+    x = 10
+    If 1 < i Then
+      item = "1=AND;2=OR;"
+      left = x
+      top = y
+      Controls_AddComboBox()
+      cbLOp[i] = cbox
+    EndIf
+    x = x + 80
+    item = hd
+    left = x
+    top = y
+    Controls_AddComboBox()
+    cbItem[i] = cbox
+    x = x + 190
+    item = "1=\=;2=>;3=<;4=>\=;5=<\=;6=<>;7=LIKE;"
+    left = x
+    top = y
+    Controls_AddComboBox()
+    cbOp[i] = cbox
+    x = x + 80
+    tb[i] = Controls.AddTextBox(x, y)
+    Controls.SetSize(tb[i], gw - 10 - x, 22)
+    y = y + 30
+  EndFor
+  x = 10
+  bt = Controls.AddButton("Search", x, y)
+  msg = "Loading "
+  tx = Shapes.AddText(msg)
+  Shapes.Move(tx, gw / 2, y + 4)
+  y = y + 40
+  mtb = Controls.AddMultiLineTextBox(x, y)
+  Controls.SetSize(mtb, gw - 20, gh - y - 10)
+  Timer.Interval = 1000
+  Timer.Tick = OnTick
+  ReadCSV()
+  buf = ""
+  For i = 1 To num
+    For j = 1 To 10
+      buf = buf + pgm[i][j]
+      If j < 10 Then
+        buf = Text.Append(buf, ",")
+      EndIf
+    EndFor
+    buf = buf + CRLF
+  EndFor
+  Controls.SetTextBoxText(mtb, buf)
+  Timer.Pause()
+  Shapes.SetText(tx, "Records: " + num + " / " + num)
+EndSub
+Sub GetItemNumber
+  ' param item
+  ' return j - item number
+  n = Array.GetItemCount(hd)
+  For j = 1 To n
+    If hd[j] = item Then
+      Goto break
+    EndIf
+  EndFor
+  break:
+EndSub
+Sub OnTick
+  msg = msg + "."
+  Shapes.SetText(tx, msg)
+EndSub
+Sub Search
+  msg = "Searching "
+  Shapes.SetText(tx, msg)
+  Timer.Resume()
+  line = ""
+  For iCond = 1 To 3
+    If 1 < iCond Then
+      cbox = cbLOp[iCond]
+      Controls_GetComboBoxText()
+      lOp = txt
+    EndIf
+    cbox = cbItem[iCond]
+    Controls_GetComboBoxText()
+    item = txt
+    GetItemNumber()
+    cbox = cbOp[iCond]
+    Controls_GetComboBoxText()
+    op = txt
+    kw = Controls.GetTextBoxText(tb[iCond])
+    If iCond = 1 Or lOp <> "" Then
+      For i = 1 To num
+        If op = "=" Then
+          If pgm[i][j] = kw Then
+            line[i] = "True"
+          EndIf
+        ElseIf op = "<>" Then
+          If pgm[i][j] <> kw Then
+            line[i] = "True"
+          EndIf
+        ElseIf op = "<" Then
+          If pgm[i][j] < kw Then
+            line[i] = "True"
+          EndIf
+        ElseIf op = ">" Then
+          If pgm[i][j] > kw Then
+            line[i] = "True"
+          EndIf
+        ElseIf op = "LIKE" Then
+          If Text.IsSubText(pgm[i][j], kw) Then
+            line[i] = "True"
+          EndIf
+        EndIf
+      EndFor
+    EndIf
+  EndFor
+  buf = ""
+  hit = Array.GetItemCount(line)
+  index = Array.GetAllIndices(line)
+  For i = 1 To hit
+    For j = 1 To 10
+      buf = buf + pgm[index[i]][j]
+      If j < 10 Then
+        buf = Text.Append(buf, ",")
+      EndIf
+    EndFor
+    buf = buf + CRLF
+  EndFor
+  Controls.SetTextBoxText(mtb, buf)
+  Timer.Pause()
+  Shapes.SetText(tx, "Records: " + hit + " / " + num)
+EndSub
 Sub ReadCSV
   ' param filename
   ' return pgm
@@ -150,6 +241,15 @@ Sub Controls_AddComboBox
   Controls.ButtonClicked = Controls_OnButtonClicked
   GraphicsWindow.MouseMove = Controls_OnMouseMove
   GraphicsWindow.MouseDown = Controls_OnMouseDown
+  i = Stack.PopValue("local")
+EndSub
+Sub Controls_GetComboBoxText
+  ' version 0.4a
+  ' param cbox - name of combo box
+  ' return txt
+  Stack.PushValue("local", i)
+  i = Text.GetSubTextToEnd(cbox, 9)
+  txt = Controls.GetTextBoxText(cbProp[i]["tbox"])
   i = Stack.PopValue("local")
 EndSub
 Sub Controls_Proc

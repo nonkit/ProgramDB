@@ -1,15 +1,17 @@
-' Program Database 0.4a
+' Program Database 0.5b
 ' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
 ' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
-'  0.4a 2015-12-12 Supported Search button.
+'  0.5b 2015-12-14 #6 Supported compare texts. (HMK932-1)
+'  0.4a 2015-12-12 #5 Supported Search button.
 '  0.3a 2015-12-07 #1 Supported combo box.
 '  0.2a 2014-06-24 Design changed. (HMK932-0)
 '  0.1a 2014-06-09 Created. (HMK932)
 '
-GraphicsWindow.Title = "Program Database 0.4a"
+GraphicsWindow.Title = "Program Database 0.5b"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+Not = "False=True;True=False;"
 Form()
 While "True"
   If Controls_triggered Then
@@ -87,6 +89,72 @@ Sub Form
   Timer.Pause()
   Shapes.SetText(tx, "Records: " + num + " / " + num)
 EndSub
+Sub Compare
+  ' param text1, text2
+  ' returns eq ="True" if text1 = text2
+  ' returns gt = "True" if text1 > text2
+  ' returns lt = "True" if text1 < text2
+  If (text1 + 0 = text1) And (text2 + 0 = text2) Then
+    ' both text1 and text2 are numbers
+    eq = "False"
+    gt = "False"
+    lt = "False"
+    If text1 = text2 Then
+      eq = "True"
+    ElseIf text1 > text2 Then
+      gt = "True"
+    ElseIf text1 < text2 Then
+      lt = "True"
+    EndIf
+  Else
+    CompareTexts()
+  EndIf
+EndSub
+Sub CompareTexts
+  ' param text1, text2
+  ' returns eq ="True" if text1 = text2
+  ' returns gt = "True" if text1 > text2
+  ' returns lt = "True" if text1 < text2
+  eq = "False"
+  gt = "False"
+  lt = "False"
+  txt1 = Text.ConvertToLowerCase(text1)
+  txt2 = Text.ConvertToLowerCase(text2)
+  len1 = Text.GetLength(txt1)
+  len2 = Text.GetLength(txt2)
+  len = Math.Min(len1, len2)
+  For p = 1 To len
+    c1 = Text.GetCharacterCode(Text.GetSubText(txt1, p, 1))
+    c2 = Text.GetCharacterCode(Text.GetSubText(txt2, p, 1))
+    If c1 > c2 Then
+      gt = "True"
+      p = len + 1 ' break
+    ElseIf c1 < c2 Then
+      lt = "True"
+      p = len + 1 ' break
+    Else
+      ' compare case
+      c1 = Text.GetCharacterCode(Text.GetSubText(text1, p, 1))
+      c2 = Text.GetCharacterCode(Text.GetSubText(text2, p, 1))
+      If c1 > c2 Then
+        gt = "True"
+        p = len + 1 ' break
+      ElseIf c1 < c2 Then
+        lt = "True"
+        p = len + 1 ' break
+      EndIf
+    EndIf
+  EndFor
+  If gt = "False" And lt = "False" Then
+    If len1 > len2 Then
+      gt = "True"
+    ElseIf len1 < len2 Then
+      lt = "True"
+    Else
+      eq = "True"
+    EndIf
+  EndIf
+EndSub
 Sub GetItemNumber
   ' param item
   ' return j - item number
@@ -102,6 +170,22 @@ Sub OnTick
   msg = msg + "."
   Shapes.SetText(tx, msg)
 EndSub
+Sub SelectLine
+  ' param lOp - left operation "", "AND" or "OR"
+  ' param i - index of line array
+  ' return line[i] - "True" if selected
+  If lOp = "" Or lOp = "OR" Then
+    line[i] = "True"
+  EndIf
+EndSub
+Sub UnselectLine
+  ' param lOp - left operation "", "AND" or "OR"
+  ' param i - index of line array
+  ' return line[i] - "" if unselected
+  If lOp = "AND" Then
+    line[i] = ""
+  EndIf
+EndSub
 Sub Search
   msg = "Searching "
   Shapes.SetText(tx, msg)
@@ -112,6 +196,8 @@ Sub Search
       cbox = cbLOp[iCond]
       Controls_GetComboBoxText()
       lOp = txt
+    Else
+      lOp = ""
     EndIf
     cbox = cbItem[iCond]
     Controls_GetComboBoxText()
@@ -125,23 +211,60 @@ Sub Search
       For i = 1 To num
         If op = "=" Then
           If pgm[i][j] = kw Then
-            line[i] = "True"
+            SelectLine()
+          Else
+            UnselectLine()
           EndIf
         ElseIf op = "<>" Then
-          If pgm[i][j] <> kw Then
-            line[i] = "True"
+          text1 = pgm[i][j]
+          text2 = kw
+          Compare()
+          If Not[eq] Then
+            SelectLine()
+          Else
+            UnselectLine()
           EndIf
         ElseIf op = "<" Then
-          If pgm[i][j] < kw Then
-            line[i] = "True"
+          text1 = pgm[i][j]
+          text2 = kw
+          Compare()
+          If lt Then
+            SelectLine()
+          Else
+            UnselectLine()
+          EndIf
+        ElseIf op = "<=" Then
+          text1 = pgm[i][j]
+          text2 = kw
+          Compare()
+          If lt Or eq Then
+            SelectLine()
+          Else
+            UnselectLine()
           EndIf
         ElseIf op = ">" Then
-          If pgm[i][j] > kw Then
-            line[i] = "True"
+          text1 = pgm[i][j]
+          text2 = kw
+          Compare()
+          If gt Then
+            SelectLine()
+          Else
+            UnselectLine()
+          EndIf
+        ElseIf op = ">=" Then
+          text1 = pgm[i][j]
+          text2 = kw
+          Compare()
+          If gt Or eq Then
+            SelectLine()
+          Else
+            UnselectLine()
           EndIf
         ElseIf op = "LIKE" Then
           If Text.IsSubText(pgm[i][j], kw) Then
-            line[i] = "True"
+            SelectLine()
+          Else
+            UnselectLine()
           EndIf
         EndIf
       EndFor

@@ -1,9 +1,9 @@
-' Program Folder Manager 0.4
+' Program Folder Manager 0.41
 ' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
 ' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
-'  0.4 2015-12-07 #2 Changed for Windows 10.
+'  0.41 2015-12-16 #2 Changed for Windows 10. (CRK000-2)
 '  0.3 2014-06-13 Supported sub folders. (CRK000-1)
 '  0.2 2014-06-06 Added other folders. (CRK000-0)
 '  0.1 2014-06-04 Created. (CRK000)
@@ -59,5 +59,4 @@ Sub Settings_Write
   ' param settings
   ' return result
   result = File.WriteContents(filename, settings)
-EndSub
-  
+EndSub 

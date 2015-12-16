@@ -1,7 +1,8 @@
-' Program Scanner 0.2b
-' Copyright (c) 2014 Nonki Takahashi.
+' Program Scanner 0.3b
+' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
 '
 ' History:
+'  0.3b 2015-12-15 Supported #9 and #12 for Author. (PMG585-1)
 '  0.2b 2014-06-06 Chaged to get last update. (PMG585-0)
 '  0.1b 2014-06-05 Created. (PMG585)
 ' 
@@ -11,7 +12,7 @@ DIGIT = "0123456789"
 ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 hd = "1=Program ID;2=Source Filename;3=Screen Shot;4=Description;5=Last Update;6=Version;7=Author;8=Lines;9=Subroutines;10=Challenge;"
 od = "id=1;fn=2;ss=3;ds=4;dt=5;vr=6;au=7;nl=8;sb=9;ch=10;"
-TextWindow.WriteLine("Program Scanner 0.2b")
+TextWindow.WriteLine("Program Scanner 0.3b")
 csvpath = Program.Directory + "\ProgramDB.csv"
 File.WriteContents(csvpath, "")
 data = hd
@@ -31,6 +32,14 @@ For i = 1 To npath
     EndIf
   EndFor
 EndFor
+Sub ConvertCommaToUnderscore
+  ' param line
+  ' return line - removed comma
+  While Text.IsSubText(line, ",")
+    p = Text.GetIndexOf(line, ",")
+    line = Text.GetSubText(line, 1, p - 1) + "_" + Text.GetSubTextToEnd(line, p + 1)
+  EndWhile
+EndSub
 Sub CSV_ConvertAndWriteLine
   ' param csvpath - CSV path
   ' param data - data array
@@ -56,7 +65,7 @@ Sub GetAuthor
   If 0 < p Then
     SkipCopyright()
     GetYears()  ' skip years
-    GetName()
+    GetAuthorName()
     au = name
     Goto gaExit
   EndIf
@@ -67,6 +76,18 @@ Sub GetAuthor
     au = name
   EndIf
   gaExit:
+EndSub
+Sub GetAuthorName
+  ' param line - possibly with name
+  ' param p - pointer to parse
+  ' return name - author name
+  name = ""
+  c = Text.GetSubText(line, p, 1)
+  While Text.IsSubText(ALPHA + DIGIT + " ", Text.ConvertToUpperCase(c))
+    name = name + c
+    p = p + 1
+    c = Text.GetSubText(line, p, 1)
+  EndWhile
 EndSub
 Sub GetDate
   ' param line
@@ -175,32 +196,57 @@ Sub GetID
   ' return id - program ID
   ' TODO - support XXX999-9, XXX999-99 and starts with also
   p = Text.GetLength(line)
-  If Text.EndsWith(line, ")") And Text.GetSubText(line, p - 7, 1) = "(" Then
-    pi = p - 6
+  id = ""
+  If Text.EndsWith(line, ")") Then
+    pi = p - 1
+  Else
+    pi = p
+  EndIf
+  If 9 <= pi And Text.GetSubText(line, pi - 2, 1) = "-" Then
+    rev = Text.GetSubText(line, pi - 1, 2)
+    pi = pi - 8
+    id = Text.GetSubText(line, pi, 6)
+  ElseIf 8 <= pi And Text.GetSubText(line, pi - 1, 1) = "-" Then
+    rev = Text.GetSubText(line, pi, 1)
+    pi = pi - 7
     id = Text.GetSubText(line, pi, 6)
   Else
-    pi = p - 5
-    id = Text.GetSubTextToEnd(line, pi)
+    rev = ""
+    pi = pi - 5
+    id = Text.GetSubText(line, pi, 6)
   EndIf
-  If Text.GetLength(id) = 6 Then
+  If Text.EndsWith(line, ")") Then
+    If pi < 1 Or Text.GetSubText(line, pi - 1, 1) <> "(" Then
+      rev = ""
+      id = ""
+    EndIf
+  EndIf
+  If 0 < Text.GetLength(rev) Then
+    id = id + "-" + rev
+    For p = 1 To Text.GetLength(rev)
+      If Not[Text.IsSubText(DIGIT, Text.GetSubText(rev, p, 1))] Then
+        id = ""
+        p = Text.GetLength(rev) ' break
+      EndIf
+    EndFor
+  EndIf
+  If 0 < Text.GetLength(id) Then
     For p = 1 To 3
       If Not[Text.IsSubText(ALPHA, Text.GetSubText(id, p, 1))] Then
         id = ""
-        Goto giBreak1
+        p = 3 ' break
       EndIf
     EndFor
   EndIf
-  giBreak1:
-  If Text.GetLength(id) = 6 Then
+  If 0 < Text.GetLength(id) Then
     For p = 4 To 6
       If Not[Text.IsSubText(DIGIT, Text.GetSubText(id, p, 1))] Then
         id = ""
-        Goto giBreak2
+        p = 6 ' break
       EndIf
     EndFor
   EndIf
-  giBreak2:
-  If Text.GetLength(id) = 6 Then
+  If 0 < Text.GetLength(id) Then
     line = Text.Append(Text.GetSubText(line, 1, pi - 1), Text.GetSubTextToEnd(line, pi + 6))
     RemoveTrailingSpace()
   EndIf
@@ -218,6 +264,7 @@ Sub GetInfoFromSBSourceFile
     line = Text.GetSubTextToEnd(line, p)
     GetVersion()
     GetID()
+    ConvertCommaToUnderscore()
     data[od["ds"]] = line
     data[od["vr"]] = ver
     data[od["id"]] = id
@@ -393,12 +440,16 @@ Sub SkipCopyright
   ' param line
   ' param p - current pointer
   ' return p - updated pointer
-  p = p + 10
+  p = p + 10  ' copyright + 1 space
   l = Text.GetLength(line)
   If p + 2 <= l Then
     c3 = Text.GetSubText(line, p, 3)
     If c3 = "(c)" Or c3 = "(C)" Then
       p = p + 3
+    EndIf
+    c1 = Text.GetSubText(line, p, 1)
+    If c1 = "©" Then
+      p = p + 1
     EndIf
   EndIf
   SkipSpace()

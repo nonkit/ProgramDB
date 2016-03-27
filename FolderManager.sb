@@ -1,8 +1,9 @@
-' Program Folder Manager 0.41
+' Program Folder Manager 0.5
 ' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
 ' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
+'  0.5 2015-12-21 Added search folders. (CRK000-3)
 '  0.41 2015-12-16 #2 Changed for Windows 10. (CRK000-2)
 '  0.3 2014-06-13 Supported sub folders. (CRK000-1)
 '  0.2 2014-06-06 Added other folders. (CRK000-0)
@@ -10,9 +11,24 @@
 '
 Settings_GetName()
 Settings_GetFolder()
-roots[1] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\"
-roots[2] = "C:\Users\Nonki\OneDrive\Documents\SmallBasic\"
-roots[3] = "C:\Users\Nonki\OneDrive\Documents\SmallBasic\Shapes\Art\"
+roots[1] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic"
+roots[2] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Challenge of the Month\Copy"
+roots[3] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Challenge of the Month\GroupPaint"
+roots[4] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Challenge of the Month\MoonLander"
+roots[5] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Challenge of the Month\Robot"
+roots[6] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Challenge of the Month\Zodiac"
+roots[7] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Small Basic Blog\tempo"
+roots[8] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Small Basic Blog\Timer"
+roots[9] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Small Basic Enthusiasts\Filipe"
+roots[10] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Small Basic Forum\Big number"
+roots[11] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Small Basic Forum\Multiplayer"
+roots[12] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Small Basic Forum\Neural Network"
+roots[13] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\TechNet Wiki\Error"
+roots[14] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\TechNet Wiki\How To Debug"
+roots[15] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Tony Free\Firebirds"
+roots[16] = "C:\Users\Nonki\OneDrive\Documents\MySmallBasic\Tony Free\Fruit"
+roots[17] = "C:\Users\Nonki\OneDrive\Documents\SmallBasic"
+roots[18] = "C:\Users\Nonki\OneDrive\Documents\SmallBasic\Shapes\Art"
 Settings_GetSubFolders()
 filename = path + "ProgramScanner.settings"
 Settings_Write()

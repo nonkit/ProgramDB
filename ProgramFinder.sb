@@ -1,0 +1,104 @@
+' Program Finder 0.1b
+' Copyright © 2015 Nonki Takahashi.  The MIT License.
+'
+' History:
+'  0.1b 2015-12-20 Created.
+' 
+Not = "False=True;True=False;"
+dump = "False"
+TextWindow.WriteLine("Program Finder 0.1b")
+filename = Program.Directory + "\ProgramScanner.settings" 'Settings_GetName()
+Settings_Read()
+npath = Array.GetItemCount(settings)
+keyword = "dummy"
+While keyword <> ""
+  TextWindow.Write("Keyword? ")
+  keyword = TextWindow.Read()
+  For i = 1 To npath 
+    path = settings[i]
+    files = File.GetFiles(path)
+    nfile = Array.GetItemCount(files)
+    For j = 1 To nfile
+      filepath = files[j]
+      FindFile()
+    EndFor
+  EndFor
+EndWhile
+Sub FindFile
+  ' param filepath - file path
+  ' param keyword - key word
+  If Text.EndsWith(filepath, ".sb") Or Text.EndsWith(filepath, ".smallbasic") Then
+    File_Open()
+    File_ReadLine()
+    While Not[File_eof] And File_nl < 20
+      p = Text.GetIndexOf(line, "'")
+      len = Text.GetLength(line)
+      If 0 < p And p + keyword <= len Then
+        If Text.IsSubText(Text.GetSubTextToEnd(line, p + 1), keyword) Then
+          RemoveFolders()
+          TextWindow.Write(filepath + "(")
+          TextWindow.Write(File_nl + "):")
+          TextWindow.WriteLine(line)
+        EndIf
+      EndIf
+      File_ReadLine()
+    EndWhile
+  EndIf
+EndSub
+Sub RemoveFolders
+  ' param filepath
+  ' return filepath
+  pSlash = 0
+  p = Text.GetIndexOf(filepath, "\")
+  If 0 < p Then
+    While 0 < p
+      pSlash = pSlash + p
+      p = Text.GetIndexOf(Text.GetSubTextToEnd(filepath, pSlash + 1), "\")
+    EndWhile
+    filepath = Text.GetSubTextToEnd(filepath, pSlash + 1)
+  EndIf
+EndSub
+Sub File_Open
+  ' param filepath
+  CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+  File_buf = File.ReadContents(filepath)
+  File_p = 1  ' buffer pointer
+  File_nl = 0 ' number of line
+  File_eof = "False"
+EndSub
+Sub File_ReadLine
+  ' return line
+  eol = Text.GetIndexOf(Text.GetSubTextToEnd(File_buf, File_p), CRLF)
+  If 0 < eol Then
+    line = Text.GetSubText(File_buf, File_p, eol - 1)
+    File_p = File_p + eol + 1
+    File_nl = File_nl + 1
+    File_eof = "False"
+  Else
+    line = Text.GetSubTextToEnd(File_buf, File_p)
+    If line <> "" Then
+      File_nl = File_nl + 1
+    EndIf
+    File_eof = "True"
+  EndIf
+  If dump And File_nl <= 5 Then
+    TextWindow.ForegroundColor = "Green"
+    TextWindow.WriteLine(line)
+    TextWindow.ForegroundColor = "Gray"
+  EndIf
+EndSub
+Sub Settings_GetName
+  ' return filename
+  filename = File.GetSettingsFilePath()
+EndSub
+Sub Settings_Read
+  ' param filename
+  ' return settings
+  settings = File.ReadContents(filename)
+EndSub
+Sub Settings_Write
+  ' param filename
+  ' param settings
+  ' return result
+  result = File.WriteContents(filename, settings)
+EndSub

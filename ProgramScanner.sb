@@ -1,18 +1,20 @@
-' Program Scanner 0.3b
+' Program Scanner 0.4b
 ' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
 '
 ' History:
+'  0.4b 2015-12-20 Supported #8 for Program ID. (PMG585-2)
 '  0.3b 2015-12-15 Supported #9 and #12 for Author. (PMG585-1)
 '  0.2b 2014-06-06 Chaged to get last update. (PMG585-0)
 '  0.1b 2014-06-05 Created. (PMG585)
 ' 
 dump = "True"
 Not = "False=True;True=False;"
+WQ = Text.GetCharacter(34)
 DIGIT = "0123456789"
 ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 hd = "1=Program ID;2=Source Filename;3=Screen Shot;4=Description;5=Last Update;6=Version;7=Author;8=Lines;9=Subroutines;10=Challenge;"
 od = "id=1;fn=2;ss=3;ds=4;dt=5;vr=6;au=7;nl=8;sb=9;ch=10;"
-TextWindow.WriteLine("Program Scanner 0.3b")
+TextWindow.WriteLine("Program Scanner 0.4b")
 csvpath = Program.Directory + "\ProgramDB.csv"
 File.WriteContents(csvpath, "")
 data = hd
@@ -40,22 +42,10 @@ Sub ConvertCommaToUnderscore
     line = Text.GetSubText(line, 1, p - 1) + "_" + Text.GetSubTextToEnd(line, p + 1)
   EndWhile
 EndSub
-Sub CSV_ConvertAndWriteLine
-  ' param csvpath - CSV path
-  ' param data - data array
-  line = ""
-  For k = 1 To 10
-    line = line + data[k]
-    If k < 10 Then
-      line = line + ","
-    EndIf
-  EndFor
-  TextWindow.WriteLine(line)
-  File.AppendContents(csvpath, line)
-EndSub
 Sub GetAuthor
   ' param line - possibly with author
   ' return au - author
+  ' return p - 
   au = ""
   If Text.IsSubText(line, "Original") Then
     au = ""
@@ -63,6 +53,17 @@ Sub GetAuthor
   EndIf
   p = Text.GetIndexOf(line, "Copyright ")
   If 0 < p Then
+    ' Copyright (c) 2015 Nonki Takahashi.  All right reserved.
+    SkipCopyright()
+    GetYears()  ' skip years
+    GetAuthorName()
+    au = name
+    Goto gaExit
+  EndIf
+  p = Text.GetIndexOf(Text.ConvertToLowerCase(line), "(c) ")
+  If 0 < p Then
+    ' (c) 2015  Nonki Takahashi
+    p = p + 4
     SkipCopyright()
     GetYears()  ' skip years
     GetAuthorName()
@@ -71,9 +72,19 @@ Sub GetAuthor
   EndIf
   p = Text.GetIndexOf(line, "written by ")
   If 0 < p Then
+    ' written by Nonki Takahashi.
     p = p + 11
-    GetName()
+    GetAuthorName()
     au = name
+    Goto gaExit
+  EndIf
+  p = Text.GetIndexOf(line, "Author: ")
+  If 0 < p Then
+    ' Author: Nonki Takahashi
+    p = p + 8
+    GetAuthorName()
+    au = name
+    'Goto gaExit
   EndIf
   gaExit:
 EndSub
@@ -81,6 +92,7 @@ Sub GetAuthorName
   ' param line - possibly with name
   ' param p - pointer to parse
   ' return name - author name
+  ' return p - pointer to the next of the name
   name = ""
   c = Text.GetSubText(line, p, 1)
   While Text.IsSubText(ALPHA + DIGIT + " ", Text.ConvertToUpperCase(c))
@@ -191,10 +203,9 @@ Sub GetDelimiter
   EndIf
 EndSub
 Sub GetID
-  ' param line - possibly ends with ID XXX999
+  ' param line - possibly ends with ID XXX999[-9[9]]
   ' return line - without ID
   ' return id - program ID
-  ' TODO - support XXX999-9, XXX999-99 and starts with also
   p = Text.GetLength(line)
   id = ""
   If Text.EndsWith(line, ")") Then
@@ -247,7 +258,10 @@ Sub GetID
     EndFor
   EndIf
   If 0 < Text.GetLength(id) Then
-    line = Text.Append(Text.GetSubText(line, 1, pi - 1), Text.GetSubTextToEnd(line, pi + 6))
+    line = Text.Append(Text.GetSubText(line, 1, pi - 1), Text.GetSubTextToEnd(line, pi + Text.GetLength(id)))
+    If Text.GetSubText(line, pi - 1, 2) = "()" Then
+      line = Text.Append(Text.GetSubText(line, 1, pi - 2), Text.GetSubTextToEnd(line, pi + 1))
+    EndIf
     RemoveTrailingSpace()
   EndIf
 EndSub
@@ -258,34 +272,80 @@ Sub GetInfoFromSBSourceFile
   data[od["fn"]] = filepath
   File_Open()
   File_ReadLine()
+  au = ""
   If Text.GetSubText(line, 1, 1) = "'" Then
+    ' Program Scanner 0.4b (PMG585-2)
+    ' Program Scanner 0.4b - Copyright (c) 2015 Nonki Takahashi
     p = 2
     SkipSpace()
     line = Text.GetSubTextToEnd(line, p)
     GetVersion()
     GetID()
+    RemoveCopyright()
     ConvertCommaToUnderscore()
+    RemoveTrailingSymbols()
+    If line = "Program ID" Then
+      line = ""
+    EndIf
     data[od["ds"]] = line
     data[od["vr"]] = ver
     data[od["id"]] = id
   EndIf
-  au = ""
   dt = ""
   While Not[File_eof]
     File_ReadLine()
-    If au = "" And Text.StartsWith(line, "'") Then
-      GetAuthor()
-      data[od["au"]] = au
-    EndIf
-    If dt = "" And Text.StartsWith(line, "'") And Text.IsSubText(line, ver) Then
-      If id = "" Then
+    If Text.StartsWith(line, "'") Then
+      p = Text.GetIndexOf(Text.ConvertToLowerCase(line), "version")
+      If ver = "" And 0 < p Then
+        ' Version 0.1
+        p = p + 7
+        If Text.GetSubText(line, p, 1) = ":" Then
+          p = p + 1
+        EndIf
+        SkipSpace()
+        GetName()
+        ver = name
+        data[od["vr"]] = ver
+      EndIf
+      p = Text.GetIndexOf(Text.ConvertToLowerCase(line), "program id")
+      If id = "" And 0 < p Then
+        ' Program ID PMG585
         GetID()
         data[od["id"]] = id
       EndIf
-      SkipVersion()
-      GetDate()
-      data[od["dt"]] = dt
-    EndIf
+      If au = "" Then
+        GetAuthor()
+        data[od["au"]] = au
+      EndIf
+      p = Text.GetIndexOf(Text.ConvertToLowerCase(line), "update")
+      If dt = "" And 0 < p Then
+        ' Update 2015-12-20
+        p = p + 6
+        SkipSpace()
+        GetDate()
+        data[od["dt"]] = dt
+      EndIf
+      If dt = "" And Text.IsSubText(line, ver) Then
+        '  0.1b 2014-06-05 Created. (PMG585)
+        If id = "" Then
+          GetID()
+          data[od["id"]] = id
+        EndIf
+        SkipVersion()
+        GetDate()
+        data[od["dt"]] = dt
+      EndIf
+    ElseIf data[od["ds"]] = "" And Text.IsSubText(Text.ConvertToLowerCase(line), "title = ") Then
+      p = Text.GetIndexOf(Text.ConvertToLowerCase(line), "title = ")
+      p = p + 8
+      If Text.GetSubText(line, p, 1) = WQ Then
+        p = p + 1
+        e = Text.GetIndexOf(Text.GetSubTextToEnd(line, p), WQ)
+        If 0 < e Then
+          data[od["ds"]] = Text.GetSubText(line, p, e - 1)
+        EndIf
+      EndIf
+    EndIf ' StartsWith(line, "'")
     If Text.StartsWith(line, "Sub ") Then
       GetSub()
       If data[od["sb"]] <> "" Then
@@ -332,8 +392,8 @@ Sub GetName
   ' return name - program name
   name = ""
   c = Text.GetSubText(line, p, 1)
-  While c <> " " And c <> ""
-    name = name + c
+  While c <> " " And c <> "" And c <> "'"
+    name = Text.Append(name, c)
     p = p + 1
     c = Text.GetSubText(line, p, 1)
   EndWhile
@@ -400,6 +460,7 @@ Sub GetYears
         If d = "-" Or d = "," Then
           year = Text.Append(year, d)
           p = p + 1
+          SkipSpace()
         Else
           cont = "False"
         EndIf
@@ -421,11 +482,34 @@ Sub GetYears
     match = "False"
   EndIf
 EndSub
+Sub RemoveCopyright
+  ' param line
+  ' return line
+  p = Text.GetIndexOf(line, "Copyright")
+  If p = 0 Then
+    p = Text.GetIndexOf(Text.ConvertToLowerCase(line), "(c)")
+  EndIf
+  If 0 < p Then
+    pStart = p
+    GetAuthor()
+    line = Text.Append(Text.GetSubText(line, 1, pStart - 1), Text.GetSubTextToEnd(line, p))
+  EndIf
+EndSub
 Sub RemoveTrailingSpace
   While Text.EndsWith(line, " ")
     l = Text.GetLength(line)
     line = Text.GetSubText(line, 1, l - 1)
   EndWhile
+EndSub
+Sub RemoveTrailingSymbols
+  ' param line
+  ' return line
+  RemoveTrailingSpace()
+  l = Text.GetLength(line)
+  If Text.IsSubText("-:", Text.GetSubTextToEnd(line, l)) Then
+    line = Text.GetSubText(line, 1, l - 1)
+  EndIf
+  RemoveTrailingSpace()
 EndSub
 Sub ScanFile
   ' param filepath - file path
@@ -469,6 +553,19 @@ Sub SkipVersion
   v = Text.GetIndexOf(line, ver)
   p = v + Text.GetLength(ver)
   SkipSpace()
+EndSub
+Sub CSV_ConvertAndWriteLine
+  ' param csvpath - CSV path
+  ' param data - data array
+  line = ""
+  For k = 1 To 10
+    line = line + data[k]
+    If k < 10 Then
+      line = line + ","
+    EndIf
+  EndFor
+  TextWindow.WriteLine(line)
+  File.AppendContents(csvpath, line)
 EndSub
 Sub File_Open
   ' param filePath

@@ -1,20 +1,21 @@
 Program Database
 ================
 
-Version 0.5b
+Version 0.51b
 
 RELEASE NOTES
 
-
-- \#5 [Search] works with three lines of conditions.
-- \#6 Supported compare texts.
+- Another tool Program Finder created.
+- Added other folders in Program Folder Manager.
+- \#8 Supported revision number in Program Scanner.
 
 This program was compiled with Small Basic v1.2.
 
 Following two files are runtime executables.
-- FolderManager.exe  (Program Folder Manager)
-- ProgramScanner.exe (Program Scanner)
-- ProgramDB.exe      (Program Database)
+- FolderManager.exe  (Program Folder Manager 0.5)
+- ProgramScanner.exe (Program Scanner 0.4b)
+- ProgramDB.exe      (Program Database 0.5b)
+- ProgramFinder.exe  (Program Finder 0.1b)
 - SmallBasicLibrary.dll
 
 These files are needed to run this program.
@@ -25,3 +26,4 @@ Following files are the source code.
 - FolderManager.sb
 - ProgramScanner.sb
 - ProgramDB.sb
+- ProgramFinder.sb

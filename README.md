@@ -12,14 +12,14 @@ Version 0.6b
 
 This program was compiled with Small Basic v1.2.
 
-Following two files are runtime executables.
+Following files are runtime executables.
 - FolderManager.exe  (Program Folder Manager 0.5)
 - ProgramScanner.exe (Program Scanner 0.4b)
 - ProgramDB.exe      (Program Database 0.6b)
 - ProgramFinder.exe  (Program Finder 0.3b)
 - SmallBasicLibrary.dll
 
-These files are needed to run this program.
+These files are needed to run these programs.
 - ProgramDB.csv           (Program Database CSV)
 - ProgramScanner.settings (Program Folder Information)
 

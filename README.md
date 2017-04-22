@@ -1,13 +1,14 @@
-Program Database
-================
+![](img/ProgramDBIcon.png)
+
+# Program Database
 
 Version 0.51b
 
-RELEASE NOTES
+## RELEASE NOTES
 
 - Another tool Program Finder created.
 - Added other folders in Program Folder Manager.
-- \#8 Supported revision number in Program Scanner.
+- #8 Supported revision number in Program Scanner.
 
 This program was compiled with Small Basic v1.2.
 

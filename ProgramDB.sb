@@ -1,15 +1,16 @@
-' Program Database 0.5b
-' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
+' Program Database 0.6b
+' Copyright © 2014-2016 Nonki Takahashi.  The MIT License.
 ' Repository https://programdbsb.codeplex.com
 ' 
 ' History:
+'  0.6b 2016-08-01 Supported wide window. ()
 '  0.5b 2015-12-14 #6 Supported compare texts. (HMK932-1)
 '  0.4a 2015-12-12 #5 Supported Search button.
 '  0.3a 2015-12-07 #1 Supported combo box.
 '  0.2a 2014-06-24 Design changed. (HMK932-0)
 '  0.1a 2014-06-09 Created. (HMK932)
 '
-GraphicsWindow.Title = "Program Database 0.5b"
+GraphicsWindow.Title = "Program Database 0.6b"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 Not = "False=True;True=False;"
 Form()
@@ -26,10 +27,11 @@ While "True"
   EndIf
 EndWhile
 Sub Form
-  gw = 598
+  gw = Desktop.Width - 16
   gh = 428
   GraphicsWindow.Width = gw
   GraphicsWindow.Height = gh
+  GraphicsWindow.Left = 0
   CRLF = Text.GetCharacter(13) + text.GetCharacter(10)
   GraphicsWindow.BackgroundColor = "LightGray"
   GraphicsWindow.BrushColor = "Black"

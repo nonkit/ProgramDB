@@ -1,44 +1,60 @@
-' Program Finder 0.1b
-' Copyright © 2015 Nonki Takahashi.  The MIT License.
+''' Program Finder 0.3b
+''' Copyright © 2015-2016 Nonki Takahashi.  The MIT License.
 '
 ' History:
-'  0.1b 2015-12-20 Created.
+'  0.3b 2016-04-08 Changed not only for comments.
+'  0.2b 2016-03-28 Output full path and periods while finding.
+'  0.1b 2015-12-20 Created (to find top 20 comments for each program).
 ' 
 Not = "False=True;True=False;"
 dump = "False"
-TextWindow.WriteLine("Program Finder 0.1b")
+CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+TextWindow.WriteLine("Program Finder 0.3b")
 filename = Program.Directory + "\ProgramScanner.settings" 'Settings_GetName()
+stdout = Program.Directory + "\found.txt"
 Settings_Read()
 npath = Array.GetItemCount(settings)
 keyword = "dummy"
 While keyword <> ""
   TextWindow.Write("Keyword? ")
   keyword = TextWindow.Read()
-  For i = 1 To npath 
-    path = settings[i]
-    files = File.GetFiles(path)
-    nfile = Array.GetItemCount(files)
-    For j = 1 To nfile
-      filepath = files[j]
-      FindFile()
+  If keyword <> "" Then
+    For i = 1 To npath
+      path = settings[i]
+      files = File.GetFiles(path)
+      nfile = Array.GetItemCount(files)
+      For j = 1 To nfile
+        filepath = files[j]
+        FindFile()
+      EndFor
+      TextWindow.Write(".")
     EndFor
-  EndFor
+    TextWindow.WriteLine("")
+  EndIf
 EndWhile
+Program.End()
 Sub FindFile
-  ' param filepath - file path
-  ' param keyword - key word
+  ''' Find file including keyword
+  ''' param filepath - file path
+  ''' param keyword - key word
   If Text.EndsWith(filepath, ".sb") Or Text.EndsWith(filepath, ".smallbasic") Then
     File_Open()
     File_ReadLine()
-    While Not[File_eof] And File_nl < 20
-      p = Text.GetIndexOf(line, "'")
+    While Not[File_eof] And File_nl < 30
+      'p = Text.GetIndexOf(line, "'")
       len = Text.GetLength(line)
-      If 0 < p And p + keyword <= len Then
-        If Text.IsSubText(Text.GetSubTextToEnd(line, p + 1), keyword) Then
-          RemoveFolders()
-          TextWindow.Write(filepath + "(")
-          TextWindow.Write(File_nl + "):")
-          TextWindow.WriteLine(line)
+      'If 0 < p And p + keyword <= len Then
+      If Text.GetLength(keyword) <= len Then
+        'If Text.IsSubText(Text.GetSubTextToEnd(line, p + 1), keyword) Then
+        If Text.IsSubText(line, keyword) Then
+          'RemoveFolders()
+          buf = CRLF
+          buf = buf + path + "\"
+          buf = buf + filepath + "("
+          buf = buf + File_nl + "):"
+          buf = buf + line + CRLF
+          TextWindow.Write(buf)
+          File.AppendContents(stdout, buf)
         EndIf
       EndIf
       File_ReadLine()
@@ -46,8 +62,9 @@ Sub FindFile
   EndIf
 EndSub
 Sub RemoveFolders
-  ' param filepath
-  ' return filepath
+  ''' Remove folders from filepath
+  ''' param filepath
+  ''' return filepath
   pSlash = 0
   p = Text.GetIndexOf(filepath, "\")
   If 0 < p Then
@@ -59,7 +76,8 @@ Sub RemoveFolders
   EndIf
 EndSub
 Sub File_Open
-  ' param filepath
+  ''' File | open
+  ''' param filepath
   CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
   File_buf = File.ReadContents(filepath)
   File_p = 1  ' buffer pointer
@@ -67,7 +85,8 @@ Sub File_Open
   File_eof = "False"
 EndSub
 Sub File_ReadLine
-  ' return line
+  ''' File | read line
+  ''' return line
   eol = Text.GetIndexOf(Text.GetSubTextToEnd(File_buf, File_p), CRLF)
   If 0 < eol Then
     line = Text.GetSubText(File_buf, File_p, eol - 1)
@@ -88,17 +107,20 @@ Sub File_ReadLine
   EndIf
 EndSub
 Sub Settings_GetName
-  ' return filename
+  ''' Settings | get settings file name
+  ''' return filename
   filename = File.GetSettingsFilePath()
 EndSub
 Sub Settings_Read
-  ' param filename
-  ' return settings
+  ''' Settings | read
+  ''' param filename
+  ''' return settings
   settings = File.ReadContents(filename)
 EndSub
 Sub Settings_Write
-  ' param filename
-  ' param settings
-  ' return result
+  ''' Settings | write
+  ''' param filename
+  ''' param settings
+  ''' return result
   result = File.WriteContents(filename, settings)
 EndSub

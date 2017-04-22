@@ -2,21 +2,21 @@
 
 # Program Database
 
-Version 0.51b
+Version 0.6b
 
 ## RELEASE NOTES
 
-- Another tool Program Finder created.
-- Added other folders in Program Folder Manager.
-- #8 Supported revision number in Program Scanner.
+- #14 Supported wide window. 
+- Changed not only for comments. 
+- Output full path and periods while finding.
 
 This program was compiled with Small Basic v1.2.
 
 Following two files are runtime executables.
 - FolderManager.exe  (Program Folder Manager 0.5)
 - ProgramScanner.exe (Program Scanner 0.4b)
-- ProgramDB.exe      (Program Database 0.5b)
-- ProgramFinder.exe  (Program Finder 0.1b)
+- ProgramDB.exe      (Program Database 0.6b)
+- ProgramFinder.exe  (Program Finder 0.3b)
 - SmallBasicLibrary.dll
 
 These files are needed to run this program.

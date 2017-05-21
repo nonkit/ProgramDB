@@ -1,16 +1,20 @@
-' Program Database 0.6b
-' Copyright © 2014-2016 Nonki Takahashi.  The MIT License.
-' Repository https://programdbsb.codeplex.com
-' 
+' Program Database
+' Version 0.7b
+' Copyright © 2014-2017 Nonki Takahashi.  The MIT License.
+' Repository https://github.com/nonkit/ProgramDB
+' Last update 2017-05-21
+' Program ID HMK932-2
+
 ' History:
-'  0.6b 2016-08-01 Supported wide window. ()
+'  0.7b 2017-05-21 Changed to close combo box menu when button clicked again.
+'  0.6b 2016-08-01 Supported wide window.
 '  0.5b 2015-12-14 #6 Supported compare texts. (HMK932-1)
 '  0.4a 2015-12-12 #5 Supported Search button.
 '  0.3a 2015-12-07 #1 Supported combo box.
 '  0.2a 2014-06-24 Design changed. (HMK932-0)
 '  0.1a 2014-06-09 Created. (HMK932)
-'
-GraphicsWindow.Title = "Program Database 0.6b"
+
+GraphicsWindow.Title = "Program Database 0.7b"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 Not = "False=True;True=False;"
 Form()
@@ -26,6 +30,7 @@ While "True"
     Program.Delay(200)
   EndIf
 EndWhile
+
 Sub Form
   gw = Desktop.Width - 16
   gh = 428
@@ -91,7 +96,9 @@ Sub Form
   Timer.Pause()
   Shapes.SetText(tx, "Records: " + num + " / " + num)
 EndSub
+
 Sub Compare
+  ' Compare numbers or texts
   ' param text1, text2
   ' returns eq ="True" if text1 = text2
   ' returns gt = "True" if text1 > text2
@@ -112,7 +119,9 @@ Sub Compare
     CompareTexts()
   EndIf
 EndSub
+
 Sub CompareTexts
+  ' Compare texts
   ' param text1, text2
   ' returns eq ="True" if text1 = text2
   ' returns gt = "True" if text1 > text2
@@ -157,7 +166,9 @@ Sub CompareTexts
     EndIf
   EndIf
 EndSub
+
 Sub GetItemNumber
+  ' Get item number
   ' param item
   ' return j - item number
   n = Array.GetItemCount(hd)
@@ -168,11 +179,15 @@ Sub GetItemNumber
   EndFor
   break:
 EndSub
+
 Sub OnTick
+  ' Timer event handler
   msg = msg + "."
   Shapes.SetText(tx, msg)
 EndSub
+
 Sub SelectLine
+  ' Select line
   ' param lOp - left operation "", "AND" or "OR"
   ' param i - index of line array
   ' return line[i] - "True" if selected
@@ -180,7 +195,9 @@ Sub SelectLine
     line[i] = "True"
   EndIf
 EndSub
+
 Sub UnselectLine
+  ' Unselect line
   ' param lOp - left operation "", "AND" or "OR"
   ' param i - index of line array
   ' return line[i] - "" if unselected
@@ -188,7 +205,9 @@ Sub UnselectLine
     line[i] = ""
   EndIf
 EndSub
+
 Sub Search
+  ' Search
   msg = "Searching "
   Shapes.SetText(tx, msg)
   Timer.Resume()
@@ -288,8 +307,10 @@ Sub Search
   Timer.Pause()
   Shapes.SetText(tx, "Records: " + hit + " / " + num)
 EndSub
+
 Sub ReadCSV
-  ' param filename
+  ' Read CSV file
+  ' param filename - CSV filename
   ' return pgm
   ' return num
   buf = "dummy"
@@ -313,8 +334,10 @@ Sub ReadCSV
     EndIf
   EndWhile
 EndSub
+
 Sub WriteCSV
-  ' param filename
+  ' Write CSV file
+  ' param filename - CSV filename
   ' param pgm
   ' param num
   File.WriteContents(filename, "")
@@ -330,7 +353,9 @@ Sub WriteCSV
     File.WriteLine(filename, i, buf)
   EndFor
 EndSub
+
 Sub Controls_AddComboBox
+  ' Controls | Add a combo box
   ' param item - array of items
   ' param left - the x co-ordinate of the combo box
   ' param top - the y co-ordinate of the combo box
@@ -368,7 +393,9 @@ Sub Controls_AddComboBox
   GraphicsWindow.MouseDown = Controls_OnMouseDown
   i = Stack.PopValue("local")
 EndSub
+
 Sub Controls_GetComboBoxText
+  ' Controls | Get combo box text
   ' version 0.4a
   ' param cbox - name of combo box
   ' return txt
@@ -377,8 +404,10 @@ Sub Controls_GetComboBoxText
   txt = Controls.GetTextBoxText(cbProp[i]["tbox"])
   i = Stack.PopValue("local")
 EndSub
+
 Sub Controls_Proc
-  ' version 0.1a
+  ' Controls | Procedure
+  ' version 0.2b
   For i = 1 To nCBox
     If Controls.LastClickedButton = cbProp[i]["btn"] Then
       GraphicsWindow.PenColor = "LightGray"
@@ -392,10 +421,17 @@ Sub Controls_Proc
         Shapes.Move(it[j], cbProp[i]["x"] + cbProp[i]["height"] * 0.3, cbProp[i]["y"] + (j + 0.2) * cbProp[i]["height"])
       EndFor
       Controls_mouseDown = "False"
+      Controls_triggered = "False"
       While Not[Controls_mouseDown]
         If Controls_mouseMove Then
           Controls_Select()
           Controls_mouseMove = "False"
+        ElseIf Controls_triggered Then
+          ' button clicked again
+          _bt = Controls.LastClickedButton
+          Controls_mx = Shapes.GetLeft(_bt)
+          Controls_my = Shapes.GetTop(_bt)
+          Controls_mouseDown = "True"
         Else
           Program.Delay(200)
         EndIf
@@ -414,7 +450,9 @@ Sub Controls_Proc
   EndFor
   Controls_triggered = "False"
 EndSub
+
 Sub Controls_Init
+  ' Controls | Initialize
   ' version 0.1a
   Not = "False=True;True=False;"
   GraphicsWindow.FontName = "Lucida UI"
@@ -436,23 +474,31 @@ Sub Controls_Init
   luw = luw + "Þ=94;ß=95;÷=103;ÿ=86;"
   Controls_triggered = "False"
 EndSub
+
 Sub Controls_OnButtonClicked
+  ' Controls | Button event handler
   ' version 0.1a
   Controls_triggered = "True"
 EndSub
+
 Sub Controls_OnMouseMove
+  ' Controls | Mouse event handler
   ' version 0.1a
   Controls_mx = GraphicsWindow.MouseX
   Controls_my = GraphicsWindow.MouseY
   Controls_mouseMove = "True"
 EndSub
+
 Sub Controls_OnMouseDown
+  ' Controls | Mouse event handler
   ' version 0.1a
   Controls_mx = GraphicsWindow.MouseX
   Controls_my = GraphicsWindow.MouseY
   Controls_mouseDown = "True"
 EndSub
+
 Sub Controls_Select
+  ' Controls | Select a combo box menu item
   ' version 0.1a
   selected = 0
   If cbProp[i]["x"] <= Controls_mx And Controls_mx <= cbProp[i]["x"] + cbProp[i]["width"] Then

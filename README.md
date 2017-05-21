@@ -2,20 +2,19 @@
 
 # Program Database
 
-Version 0.6b
+Version 0.7b
 
 ## RELEASE NOTES
 
-- #14 Supported wide window. 
-- Changed not only for comments. 
-- Output full path and periods while finding.
+- Changed to close combo box menu when the button clicked again. 
+- Added comments. 
 
 This program was compiled with Small Basic v1.2.
 
 Following files are runtime executables.
 - FolderManager.exe  (Program Folder Manager 0.5)
 - ProgramScanner.exe (Program Scanner 0.4b)
-- ProgramDB.exe      (Program Database 0.6b)
+- ProgramDB.exe      (Program Database 0.7b)
 - ProgramFinder.exe  (Program Finder 0.3b)
 - SmallBasicLibrary.dll
 

@@ -25,6 +25,9 @@ $RECYCLE.BIN/
 # Windows text files
 *.txt
 
+# Debug folder
+Graduate
+
 # =========================
 # Operating System Files
 # =========================

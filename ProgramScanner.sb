@@ -1,7 +1,8 @@
-' Program Scanner 0.4b
-' Copyright © 2014-2015 Nonki Takahashi.  The MIT License.
+' Program Scanner 0.5b
+' Copyright © 2014-2017 Nonki Takahashi.  The MIT License.
 '
 ' History:
+'  0.5b 2017-07-21 Fixed #11 only LF not treated.
 '  0.4b 2015-12-20 Supported #8 for Program ID. (PMG585-2)
 '  0.3b 2015-12-15 Supported #9 and #12 for Author. (PMG585-1)
 '  0.2b 2014-06-06 Chaged to get last update. (PMG585-0)
@@ -569,7 +570,8 @@ Sub CSV_ConvertAndWriteLine
 EndSub
 Sub File_Open
   ' param filePath
-  CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+  CR = Text.GetCharacter(13)
+  LF = Text.GetCharacter(10)
   File_buf = File.ReadContents(files[j])
   File_p = 1  ' buffer pointer
   File_nl = 0 ' number of line
@@ -577,10 +579,14 @@ Sub File_Open
 EndSub
 Sub File_ReadLine
   ' return line
-  eol = Text.GetIndexOf(Text.GetSubTextToEnd(File_buf, File_p), CRLF)
+  eol = Text.GetIndexOf(Text.GetSubTextToEnd(File_buf, File_p), LF)
   If 0 < eol Then
-    line = Text.GetSubText(File_buf, File_p, eol - 1)
-    File_p = File_p + eol + 1
+    If Text.GetSubText(File_buf, File_p + eol - 2, 1) = CR Then
+      line = Text.GetSubText(File_buf, File_p, eol - 2)
+    Else ' LF only
+      line = Text.GetSubText(File_buf, File_p, eol - 1)
+    EndIf
+    File_p = File_p + eol
     File_nl = File_nl + 1
     File_eof = "False"
   Else

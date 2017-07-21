@@ -1,17 +1,16 @@
-''
-' Program Finder 0.4b
+' Program Finder 0.5b
 ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
 
 ' History:
+'  0.5b 2017-07-22 #11 Bug fixed: only LF not treated.
 '  0.4b 2017-05-03 #16 Bug fixed: shows redundant path name.
 '  0.3b 2016-04-08 Changed not only for comments.
 '  0.2b 2016-03-28 Output full path and periods while finding.
 '  0.1b 2015-12-20 Created (to find top 20 comments for each program).
 ' 
-title = "Program Finder 0.4b"
+title = "Program Finder 0.5b"
 Not = "False=True;True=False;"
 dump = "False"
-CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 TextWindow.WriteLine(title)
 filename = Program.Directory + "\ProgramScanner.settings" ' Settings_GetName()
 stdout = Program.Directory + "\found.txt"
@@ -38,7 +37,6 @@ EndWhile
 Program.End()
 
 Sub FindFile
-  ''
   ' Find file including keyword
   ' param filepath - file path
   ' param keyword - key word
@@ -53,10 +51,10 @@ Sub FindFile
         ' If Text.IsSubText(Text.GetSubTextToEnd(line, p + 1), keyword) Then
         If Text.IsSubText(line, keyword) Then
           ' RemoveFolders()
-          buf = CRLF
+          buf = CR + LF
           buf = buf + filepath + "("
           buf = buf + File_nl + "):"
-          buf = buf + line + CRLF
+          buf = buf + line + CR + LF
           TextWindow.Write(buf)
           File.AppendContents(stdout, buf)
         EndIf
@@ -67,7 +65,6 @@ Sub FindFile
 EndSub
 
 Sub RemoveFolders
-  ''
   ' Remove folders from filepath
   ' param filepath
   ' return filepath
@@ -83,10 +80,10 @@ Sub RemoveFolders
 EndSub
 
 Sub File_Open
-  ''
   ' File | open
   ' param filepath
-  CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+  CR = Text.GetCharacter(13)
+  LF = Text.GetCharacter(10)
   File_buf = File.ReadContents(filepath)
   File_p = 1  ' buffer pointer
   File_nl = 0 ' number of line
@@ -94,13 +91,16 @@ Sub File_Open
 EndSub
 
 Sub File_ReadLine
-  ''
   ' File | read line
   ' return line
-  eol = Text.GetIndexOf(Text.GetSubTextToEnd(File_buf, File_p), CRLF)
+  eol = Text.GetIndexOf(Text.GetSubTextToEnd(File_buf, File_p), LF)
   If 0 < eol Then
-    line = Text.GetSubText(File_buf, File_p, eol - 1)
-    File_p = File_p + eol + 1
+    If Text.GetSubText(File_buf, File_p + eol - 2, 1) = CR Then
+      line = Text.GetSubText(File_buf, File_p, eol - 2)
+    Else
+      line = Text.GetSubText(File_buf, File_p, eol - 1)
+    EndIf
+    File_p = File_p + eol
     File_nl = File_nl + 1
     File_eof = "False"
   Else
@@ -118,14 +118,12 @@ Sub File_ReadLine
 EndSub
 
 Sub Settings_GetName
-  ''
   ' Settings | get settings file name
   ' return filename
   filename = File.GetSettingsFilePath()
 EndSub
 
 Sub Settings_Read
-  ''
   ' Settings | read
   ' param filename
   ' return settings
@@ -133,10 +131,10 @@ Sub Settings_Read
 EndSub
 
 Sub Settings_Write
-  ''
   ' Settings | write
   ' param filename
   ' param settings
   ' return result
   result = File.WriteContents(filename, settings)
 EndSub
+  

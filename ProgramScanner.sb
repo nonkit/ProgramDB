@@ -2,12 +2,13 @@
 ' Copyright © 2014-2017 Nonki Takahashi.  The MIT License.
 '
 ' History:
-'  0.5b 2017-07-21 Fixed #11 only LF not treated.
-'  0.4b 2015-12-20 Supported #8 for Program ID. (PMG585-2)
+'  0.5b 2017-07-21 Fixed #11 only LF not treated. (PMG585-2)
+'  0.4b 2015-12-20 Supported #8 for Program ID.
 '  0.3b 2015-12-15 Supported #9 and #12 for Author. (PMG585-1)
 '  0.2b 2014-06-06 Chaged to get last update. (PMG585-0)
 '  0.1b 2014-06-05 Created. (PMG585)
 ' 
+title = "Program Scanner 0.5b"
 dump = "True"
 Not = "False=True;True=False;"
 WQ = Text.GetCharacter(34)
@@ -15,7 +16,7 @@ DIGIT = "0123456789"
 ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 hd = "1=Program ID;2=Source Filename;3=Screen Shot;4=Description;5=Last Update;6=Version;7=Author;8=Lines;9=Subroutines;10=Challenge;"
 od = "id=1;fn=2;ss=3;ds=4;dt=5;vr=6;au=7;nl=8;sb=9;ch=10;"
-TextWindow.WriteLine("Program Scanner 0.4b")
+TextWindow.WriteLine(title)
 csvpath = Program.Directory + "\ProgramDB.csv"
 File.WriteContents(csvpath, "")
 data = hd

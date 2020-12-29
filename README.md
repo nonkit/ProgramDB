@@ -2,6 +2,8 @@
 
 # Program Database
 
+[![Made with Small Basic](https://img.shields.io/badge/Made%20with-Small%20Basic-orange)](http://smallbasic.com)
+
 Version 0.7b
 
 ## RELEASE NOTES
@@ -27,3 +29,6 @@ Following files are the source code.
 - ProgramScanner.sb
 - ProgramDB.sb
 - ProgramFinder.sb
+
+## Credit
+Made with Small Basic badge is designed by [rockycodeshimhe-1332](https://docs.microsoft.com/en-us/answers/questions/210063/guys-i-made-a-nice-small-basic-github-badge.html)
